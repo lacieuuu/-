@@ -13,9 +13,9 @@
 ### 第一阶段：准备工作
  1. **Supabase Project URL** 与 **anon public Key**（数据存储凭证）
  * 访问 https://supabase.com/ 注册账号并创建一个新项目（Project）。
- * 进入项目仪表盘，点击右上角导航菜单图标，找到并点击 **Project Settings**，分别在 **API Keys**和**Data Api**复制你的**anon public key** 和 **Project URL**。
+ * 进入项目仪表盘，在导航菜单里找到并点击 **Project Settings**，分别在 **API Keys**和**Data Api**里复制你的**anon public key** 和 **Project URL**。
  2. **初始化数据表 (核心步骤)**
- * 在 Supabase 右上角导航栏点击 **SQL Editor**（>_ 符号图标），点击 New Query。
+ * 点击仪表盘右上角>_ 图标（SQL Editor）。
  * 粘贴并运行（Run）以下代码来创建数据表和初始数据：
    ```sql
    create table if not exists manager_data (
@@ -27,7 +27,7 @@
    
    ```
  * 运行成功后，点击右上角导航菜单里的 **Table Editor**（表格图标），选中刚创建的 manager_data 表。
- * 确保页面上方显示是 **Disable RLS**（关闭权限控制，确保网页端可正常读写数据）。
+ * 确保页面上方选中的是 **Disable RLS**（关闭权限控制，确保网页端可正常读写数据）。
  3. **Vercel Token**（免登录部署令牌）
  * 注册登录vercel官网 
  * 进入 https://vercel.com/account/tokens 页面。
