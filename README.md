@@ -35,10 +35,10 @@
 ### 第二阶段：部署
  1. **运行脚本**：
  * Windows 打开 powershell/cmd，安卓手机打开termux，执行以下命令：
-```bash
-<(curl -s https://raw.githubusercontent.com/lacieuuu/private-account-manager/main/deploy.sh)
+   ```bash
+   <(curl -s https://raw.githubusercontent.com/lacieuuu/private-account-manager/main/deploy.sh)
 
-```
+   ```
  2. **完成配置**
  * 根据终端弹出的提示，依次粘贴 **Project URL**、**anon public Key** 和 **Vercel Token** 并按回车。
  * 脚本将自动完成密钥的替换与打包发布，部署成功后会返回属于你的专属访问网址。
