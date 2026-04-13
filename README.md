@@ -34,7 +34,7 @@
  * 创建并复制token 令牌，用于在终端执行免登录的自动化部署。
 ### 第二阶段：部署
  1. **运行脚本**：
- *  Windows 打开powershell，执行以下命令：
+  *  Windows 打开powershell，执行以下命令：
    ```powershell
    Invoke-RestMethod -Uri "[https://raw.githubusercontent.com/lacieuuu/private-account-manager/main/deploy.ps1](https://raw.githubusercontent.com/lacieuuu/private-account-manager/main/deploy.ps1)" | Invoke-Expression
    
