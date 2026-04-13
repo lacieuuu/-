@@ -3,37 +3,60 @@ echo "======================================================="
 echo "✨ 账号管理器 - 全自动终极部署脚本 (Supabase 版) ✨"
 echo "======================================================="
 
-# 1. 识别操作系统环境
 OS="$(uname -s)"
 IS_TERMUX=false
 if [[ -n "$TERMUX_VERSION" ]] || [[ "$(uname -o 2>/dev/null)" == "Android" ]]; then
     IS_TERMUX=true
-    echo "📱 识别到运行环境：Android Termux"
-elif [[ "$OS" == "Darwin" ]]; then
-    echo "🍏 识别到运行环境：Mac OS"
-elif [[ "$OS" == "Linux" ]]; then
-    echo "🐧 识别到运行环境：Linux"
-elif [[ "$OS" == MINGW* || "$OS" == CYGWIN* || "$OS" == MSYS* ]]; then
-    echo "🪟 识别到运行环境：Windows (Git Bash)"
 fi
 
-echo "🔍 正在检测并配置基础环境..."
-
-# 2. 检测并自动安装 Git 和 Node.js
-install_base_env() {
+# 环境自动安装
+if ! command -v git &> /dev/null || ! command -v npm &> /dev/null; then
     if $IS_TERMUX; then
-        echo "📦 正在 Termux 中静默安装 git 和 nodejs..."
-        pkg update -y && pkg upgrade -y
-        pkg install git nodejs -y
+        pkg update -y && pkg install git nodejs -y
     elif [[ "$OS" == "Darwin" ]]; then
-        if ! command -v brew &> /dev/null; then
-            echo "❌ Mac 系统缺少 Homebrew 包管理器，请先前往 https://brew.sh 安装"
-            exit 1
-        fi
-        echo "📦 正在 Mac 中安装 git 和 node..."
         brew install git node
     elif [[ "$OS" == "Linux" ]]; then
-        if command -v apt &> /dev/null; then
+        sudo apt update && sudo apt install git nodejs npm -y
+    fi
+fi
+
+if ! command -v vercel &> /dev/null; then
+    npm install -g vercel
+fi
+
+# 代码同步
+PROJECT_DIR="private-account-manager"
+if [ ! -f "index.html" ]; then
+    if [ -d "$PROJECT_DIR" ]; then
+        cd "$PROJECT_DIR"
+        git pull origin main
+    else
+        git clone https://github.com/lacieuuu/private-account-manager.git
+        cd "$PROJECT_DIR"
+    fi
+fi
+
+echo "======================================================="
+read -p "1/3 请输入你的 Supabase Project URL: " user_supabase_url
+read -p "2/3 请输入你的 Supabase anon public Key: " user_supabase_key
+read -p "3/3 请输入你的 Vercel Token: " user_vercel_token
+
+echo "⚙️ 正在注入密钥..."
+
+# 使用管道符 | 避免 URL 中的斜杠冲突，匹配英文占位符
+if [[ "$OS" == "Darwin" ]]; then
+    sed -i '' "s|REPLACE_WITH_URL|$user_supabase_url|g" index.html
+    sed -i '' "s|REPLACE_WITH_KEY|$user_supabase_key|g" index.html
+else
+    sed -i "s|REPLACE_WITH_URL|$user_supabase_url|g" index.html
+    sed -i "s|REPLACE_WITH_KEY|$user_supabase_key|g" index.html
+fi
+
+echo "☁️ 正在推送到 Vercel..."
+vercel --prod --yes --token="$user_vercel_token"
+
+echo "======================================================="
+echo "🎉 部署大功告成！"
             echo "📦 正在 Linux 中安装 git 和 nodejs..."
             sudo apt update && sudo apt install git nodejs npm -y
         fi
