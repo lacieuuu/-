@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>账号管理平台 - 云同步</title>
+
+<style>
+/* 莫兰迪蓝色系变量 */
+:root {
+ --bg-color: #f0f4f7;
+ --card-bg: #ffffff;
+ --primary: #70889c;
+ --primary-hover: #566c7f;
+ --primary-light: #e6ecef;
+ --text-main: #4a5965;
+ --text-muted: #8b9ca8;
+ --border: #c8d3db;
+ --danger: #d98282;
+ --shadow: 0 8px 24px rgba(86, 108, 127, 0.08);
+ --radius: 12px;
+}
+
+/* 基础重置 */
+body { 
+ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+ background-color: var(--bg-color); 
+ color: var(--text-main);
+ margin: 0; 
+ padding: 20px; 
+ line-height: 1.6;
+}
+
+* { box-sizing: border-box; }
+.container { max-width: 900px; margin: 0 auto; }
+
+/* 卡片样式 */
+.card {
+ background: var(--card-bg);
+ border-radius: var(--radius);
+ padding: 25px;
+ margin-bottom: 25px;
+ box-shadow: var(--shadow);
+}
+
+h2 { margin-top: 0; color: var(--primary-hover); border-bottom: 2px solid var(--primary-light); padding-bottom: 12px; font-size: 1.4rem; }
+h3 { font-size: 1.05rem; color: var(--primary); margin: 20px 0 10px; font-weight: 600;}
+
+/* 表单与按钮 */
+input, select, textarea { 
+ border: 1px solid var(--border); 
+ border-radius: 8px; 
+ padding: 10px 14px; 
+ font-size: 14px; 
+ outline: none; 
+ transition: all 0.3s ease;
+ background: #fafbfc;
+ color: var(--text-main);
+ font-family: inherit;
+ width: 100%;
+}
+input:focus, select:focus, textarea:focus { 
+ border-color: var(--primary); 
+ box-shadow: 0 0 0 3px rgba(112, 136, 156, 0.15); 
+ background: #fff;
+}
+textarea { resize: vertical; min-height: 100px; }
+
+button { 
+ background: var(--primary); 
+ color: white; 
+ border: none; 
+ border-radius: 8px; 
+ padding: 10px 18px; 
+ font-size: 14px; 
+ cursor: pointer; 
+ transition: all 0.2s;
+ font-weight: 500;
+ white-space: nowrap;
+}
+button:hover { background: var(--primary-hover); transform: translateY(-1px); }
+button:active { transform: translateY(1px); }
+
+.btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+.btn-outline:hover { background: var(--primary-light); color: var(--primary-hover); }
+.btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.btn-danger:hover { background: #fcf0f0; color: #c96b6b; }
+
+/* 按钮尺寸调整更紧凑 */
+.btn-small { padding: 4px 10px; font-size: 12px; border-radius: 6px; margin: 0; }
+
+/* 布局工具 */
+.flex-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 15px;}
+.flex-row > * { flex: 1 1 calc(33.333% - 10px); min-width: 140px; }
+.flex-row.auto-width > * { flex: 0 0 auto; min-width: 0; }
+
+.checkbox-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+.checkbox-label { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; font-size: 14px;}
+.checkbox-label input[type="checkbox"] { accent-color: var(--primary); width: 18px; height: 18px; cursor: pointer; margin:0;}
+
+.domain-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.domain-tag { display: inline-flex; align-items: center; background: var(--primary-light); color: var(--primary-hover); padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;}
+.domain-tag button { background: transparent; color: var(--danger); padding: 0 0 0 6px; font-size: 14px; opacity: 0.7;}
+
+.result-box { background: var(--primary-light); padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid var(--border);}
+.result-item { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; padding: 10px 0; border-bottom: 1px dashed var(--border);}
+.result-item:last-child { border-bottom: none; }
+.result-text { font-family: 'Courier New', Courier, monospace; font-size: 16px; font-weight: bold; color: var(--primary-hover); word-break: break-all;}
+.result-actions { display: flex; gap: 8px; }
+
+.tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; border-bottom: 2px solid var(--primary-light);}
+.tab-btn { background: transparent; color: var(--text-muted); border-radius: 8px 8px 0 0; padding: 12px 20px; font-weight: bold; flex: 1; min-width: 100px; text-align: center;}
+.tab-btn.active { background: var(--primary); color: white; }
+
+.section { display: none; animation: fadeIn 0.3s ease; }
+.section.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ================= 表格核心排版优化 ================= */
+.table-wrapper { 
+  overflow-x: auto; 
+  overflow-y: auto; 
+  max-height: 500px; 
+  margin-top: 15px; 
+  border: 1px solid var(--border); 
+  border-radius: 8px; 
+}
+
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  min-width: 600px; 
+  font-size: 13px; 
+  table-layout: fixed; 
+}
+
+th, td { 
+  border-bottom: 1px solid var(--border); 
+  padding: 8px 10px; 
+  text-align: left; /* 默认数据列靠左 */
+  vertical-align: top; /* 默认数据列顶对齐 */
+}
+
+/* 统一所有表头：吸顶且垂直+水平居中 */
+th { 
+  background: var(--primary-light); 
+  color: var(--primary-hover); 
+  position: sticky; 
+  top: 0; 
+  z-index: 10; 
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  vertical-align: middle; 
+  text-align: center; 
+}
+
+/* 锁定单元格为刚好两行高度 */
+.cell-content, .action-btns {
+  height: 35px; 
+  overflow-y: auto; 
+}
+
+.cell-content {
+  word-break: break-all; 
+  white-space: pre-wrap; 
+  line-height: 1.4; 
+  padding-right: 4px;
+}
+
+/* 邮箱库：除了操作栏，其他单元格保持水平+垂直居中 */
+#tableAcc td {
+  vertical-align: middle;
+}
+#tableAcc .cell-content {
+  display: flex;
+  align-items: center; 
+  justify-content: center; 
+  text-align: center;
+}
+
+/* 所有表格的操作栏 (最后一列)：保持水平+垂直居中 */
+td:last-child {
+  vertical-align: middle;
+  text-align: center;
+}
+.action-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px; 
+  align-items: center; 
+  justify-content: center; 
+  align-content: center; 
+  padding-right: 4px;
+}
+
+/* 美化内部小滚动条 */
+.cell-content::-webkit-scrollbar, .action-btns::-webkit-scrollbar { width: 4px; }
+.cell-content::-webkit-scrollbar-thumb, .action-btns::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+/* ================================================== */
+
+/* Toast 提示 */
+#toast {
+ position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+ background: rgba(74, 89, 101, 0.95); color: white;
+ padding: 12px 24px; border-radius: 30px; font-size: 14px;
+ box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+ transition: opacity 0.3s, transform 0.3s;
+ opacity: 0; visibility: hidden; z-index: 1000;
+}
+#toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(-10px); }
+
+@media (max-width: 600px) {
+ body { padding: 10px; }
+ .card { padding: 15px; }
+ .flex-row > * { flex: 1 1 100%; }
+ .result-item { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+
+<body>
+
+<div id="toast">提示信息</div>
+
+<div class="container">
+ <div class="card">
+  <h2 onclick="toggleGenerator()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" title="点击展开/折叠">
+    <span>✨ 账号生成器</span>
+    <span id="generatorArrow" style="transition: transform 0.3s ease; font-size: 1rem; color: var(--text-muted); display: inline-block; transform: rotate(-90deg);">▼</span>
+  </h2>
+  
+  <div id="generatorContent" style="display: none; padding-top: 10px; animation: fadeIn 0.3s ease;">
+      <div class="flex-row">
+       <div style="flex: 2;"><select id="domain"></select></div>
+       <div style="flex: 2;"><input id="newDomain" placeholder="自定义后缀 (例: @qq.com)"></div>
+       <div style="flex: 1;"><button onclick="addDomain()" style="width: 100%;">添加后缀</button></div>
+      </div>
+      <div id="domainList" class="domain-tags"></div>
+    
+      <h3>用户名规则</h3>
+      <div class="checkbox-group">
+       <label class="checkbox-label"><input type="checkbox" id="u_lower" checked> 包含小写字母</label>
+       <label class="checkbox-label"><input type="checkbox" id="u_upper"> 包含大写字母</label>
+       <label class="checkbox-label"><input type="checkbox" id="u_number" checked> 包含数字</label>
+      </div>
+    
+      <h3>密码规则</h3>
+      <div class="checkbox-group">
+       <label class="checkbox-label"><input type="checkbox" id="p_lower" checked> 小写</label>
+       <label class="checkbox-label"><input type="checkbox" id="p_upper"> 大写</label>
+       <label class="checkbox-label"><input type="checkbox" id="p_number" checked> 数字</label>
+       <label class="checkbox-label"><input type="checkbox" id="p_special"> 特殊符号</label>
+       <label class="checkbox-label" style="margin-left:auto;">长度：<input id="p_length" type="number" value="12" style="width:70px; padding:6px;"></label>
+      </div>
+    
+      <div style="margin-top: 20px; display: flex; gap: 10px;">
+       <button onclick="generate()" style="flex: 2; font-size:16px;">🚀 一键生成</button>
+       <button onclick="save()" class="btn-outline" style="flex: 1; font-size:16px;">💾 保存并同步</button>
+      </div>
+    
+      <div class="result-box">
+       <div class="result-item">
+        <div>邮箱：<span id="email" class="result-text">-</span></div>
+        <div class="result-actions">
+         <button class="btn-small btn-outline" onclick="copyText(current.email)">复制账号</button>
+         <button class="btn-small btn-outline" onclick="copyText(current.email?.split('@')[0])">复制用户名</button>
+        </div>
+       </div>
+       <div class="result-item">
+        <div>密码：<span id="password" class="result-text">-</span></div>
+        <div class="result-actions">
+         <button class="btn-small btn-outline" onclick="copyText(current.password)">复制密码</button>
+        </div>
+       </div>
+      </div>
+  </div>
+ </div>
+
+ <div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-light); margin-top: 0; padding-bottom: 12px; margin-bottom: 15px;">
+    <h2 style="margin: 0; border: none; padding: 0;">🗂️ 数据管理库</h2>
+    <button onclick="syncFromCloud()" class="btn-small btn-outline" style="font-size: 14px;">🔄 手动同步</button>
+  </div>
+  
+  <div class="tabs">
+   <button id="tab-acc" class="tab-btn active" onclick="switchData('acc')">邮箱库</button>
+   <button id="tab-site" class="tab-btn" onclick="switchData('site')">网站库</button>
+   <button id="tab-api" class="tab-btn" onclick="switchData('api')">API库</button>
+  </div>
+
+  <div id="acc" class="section active">
+   <textarea id="txtAcc" placeholder="导入格式：email----password 或使用连续2个以上的空格分隔"></textarea>
+   <div class="flex-row auto-width" style="margin-top: 10px;">
+    <button onclick="importAcc()">📥 批量导入</button>
+    <button class="btn-outline" onclick="exportAcc()">📤 导出 CSV</button>
+    <input placeholder="🔍 搜索邮箱..." oninput="renderAcc(this.value)" style="flex:1; margin-left:auto;">
+   </div>
+   <div class="table-wrapper"><table id="tableAcc"></table></div>
+  </div>
+
+  <div id="site" class="section">
+   <textarea id="txtSite" placeholder="导入格式：用户名----密码----备注 或使用连续2个以上的空格分隔"></textarea>
+   <div class="flex-row auto-width" style="margin-top: 10px;">
+    <button onclick="importSite()">📥 批量导入</button>
+    <button class="btn-outline" onclick="exportSite()">📤 导出 CSV</button>
+    <input placeholder="🔍 搜索网站信息..." oninput="renderSite(this.value)" style="flex:1; margin-left:auto;">
+   </div>
+   <div class="table-wrapper"><table id="siteTable"></table></div>
+  </div>
+
+  <div id="api" class="section">
+   <textarea id="txtAPI" placeholder="导入格式：URL----KEY----备注 或使用连续2个以上的空格分隔"></textarea>
+   <div class="flex-row auto-width" style="margin-top: 10px;">
+    <button onclick="importAPI()">📥 批量导入</button>
+    <button class="btn-outline" onclick="exportAPI()">📤 导出 CSV</button>
+    <input placeholder="🔍 搜索 API 信息..." oninput="renderAPI(this.value)" style="flex:1; margin-left:auto;">
+   </div>
+   <div class="table-wrapper"><table id="apiTable"></table></div>
+  </div>
+ </div>
+</div>
+
+<script>
+// ================= 云同步核心配置 =================
+const CLOUD_CONFIG = {
+    BIN_ID: "{{YOUR_BIN_ID}}",
+    MASTER_KEY: "{{YOUR_MASTER_KEY}}",
+    get URL() { return `https://api.jsonbin.io/v3/b/${this.BIN_ID}`; }
+};
+
+async function syncFromCloud() {
+    toast("🔄 正在从云端同步数据...");
+    try {
+        const response = await fetch(CLOUD_CONFIG.URL, {
+            method: 'GET',
+            headers: { 'X-Master-Key': CLOUD_CONFIG.MASTER_KEY }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const record = data.record;
+            
+            if (!record || Object.keys(record).length === 0) {
+                syncToCloud();
+                return;
+            }
+
+            if (record.acc) localStorage.setItem("acc", JSON.stringify(record.acc));
+            if (record.site) localStorage.setItem("site", JSON.stringify(record.site));
+            if (record.api) localStorage.setItem("api", JSON.stringify(record.api));
+            
+            renderAcc(); renderSite(); renderAPI();
+            toast("☁️ 云端数据同步完成！");
+        } else {
+            toast("⚠️ 云端读取失败，使用本地数据");
+        }
+    } catch (error) {
+        console.error("同步失败:", error);
+        toast("🚫 网络错误，使用本地数据");
+    }
+}
+
+async function syncToCloud() {
+    toast("⏳ 正在保存至云端...");
+    const payload = {
+        acc: getAcc(),
+        site: getSite(),
+        api: getAPI()
+    };
+    try {
+        const response = await fetch(CLOUD_CONFIG.URL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': CLOUD_CONFIG.MASTER_KEY
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (response.ok) {
+            toast("☁️ 成功备份到云端！");
+        } else {
+            toast("⚠️ 云备份失败！");
+        }
+    } catch (error) {
+        toast("🚫 网络错误，云备份失败！");
+    }
+}
+
+function toggleGenerator() {
+    let content = document.getElementById("generatorContent");
+    let arrow = document.getElementById("generatorArrow");
+    if (content.style.display === "none") {
+        content.style.display = "block";
+        arrow.style.transform = "rotate(0deg)";
+    } else {
+        content.style.display = "none";
+        arrow.style.transform = "rotate(-90deg)";
+    }
+}
+
+let toastTimer;
+function toast(msg = "操作成功"){
+ let t = document.getElementById("toast");
+ t.innerText = msg;
+ t.className = "show";
+ clearTimeout(toastTimer);
+ toastTimer = setTimeout(() => { t.className = ""; }, 2500);
+}
+
+function copyText(t){
+ if(!t) return;
+ navigator.clipboard.writeText(t).then(()=>toast("📋 复制成功"));
+}
+
+let domains = ["@gmail.com", "@outlook.com", "@163.com"];
+let current = {};
+
+function renderDomains(){
+ let ds = document.getElementById("domain");
+ ds.innerHTML = "";
+ domains.forEach(d => {
+  let o = document.createElement("option"); o.value = d; o.text = d; ds.appendChild(o);
+ });
+ document.getElementById("domainList").innerHTML = domains.map(d => 
+  `<div class="domain-tag">${d} <button onclick="delDomain('${d}')">✖</button></div>`
+ ).join("");
+}
+
+function addDomain(){
+ let nd = document.getElementById("newDomain");
+ let v = nd.value.trim();
+ if(v && !v.startsWith('@')) v = '@' + v;
+ if(v && !domains.includes(v)) { domains.push(v); renderDomains(); }
+ nd.value = "";
+}
+
+function delDomain(d){ domains = domains.filter(x => x !== d); renderDomains(); }
+
+function build(o){
+ let s = "";
+ if(o.lower) s += "abcdefghijklmnopqrstuvwxyz";
+ if(o.upper) s += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+ if(o.number) s += "0123456789";
+ if(o.special) s += "!@#$%^&*";
+ return s;
+}
+
+function rand(len, set){
+ return Array.from({length: len}, () => set[Math.floor(Math.random() * set.length)]).join("");
+}
+
+function generate(){
+ let uSet = build({lower: u_lower.checked, upper: u_upper.checked, number: u_number.checked});
+ let pSet = build({lower: p_lower.checked, upper: p_upper.checked, number: p_number.checked, special: p_special.checked});
+ 
+ let uLen = Math.floor(Math.random() * 5) + 8;
+ let pLen = parseInt(p_length.value) || 12;
+ 
+ current = {
+  email: rand(uLen, uSet || "abcdefghijklmnopqrstuvwxyz") + domain.value,
+  password: rand(pLen, pSet || "abcdefghijklmnopqrstuvwxyz123")
+ };
+ email.innerText = current.email;
+ password.innerText = current.password;
+}
+
+function getAcc(){ return JSON.parse(localStorage.getItem("acc") || "[]"); }
+function save(){
+ if(!current.email) return;
+ let d = getAcc(); d.push(current);
+ localStorage.setItem("acc", JSON.stringify(d));
+ renderAcc(); 
+ syncToCloud();
+}
+
+function importAcc(){
+ let d = getAcc();
+ txtAcc.value.split("\n").forEach(l => {
+  let p = l.split(/----|:|\||\s{2,}/);
+  if(p.length >= 2) d.push({email: p[0], password: p[1]});
+ });
+ localStorage.setItem("acc", JSON.stringify(d));
+ txtAcc.value = ""; renderAcc();
+ syncToCloud();
+}
+
+function exportAcc(){
+ let csv = "\ufeffname,username,password\n";
+ getAcc().forEach(i => csv += `${i.email.split("@")[0]},${i.email},${i.password}\n`);
+ download(csv, "accounts.csv");
+}
+
+function renderAcc(f = ""){
+ let fLower = f.toLowerCase();
+ let table = document.getElementById("tableAcc");
+ table.innerHTML = `<tr><th style="width:35%">邮箱</th><th style="width:30%">密码</th><th style="width:35%">操作</th></tr>`;
+ getAcc().filter(i => (i.email||"").toLowerCase().includes(fLower)).forEach((i, x) => {
+  let r = table.insertRow();
+  
+  let c1 = r.insertCell();
+  let d1 = document.createElement("div"); d1.className = "cell-content"; d1.innerText = i.email || "-"; c1.appendChild(d1);
+  
+  let c2 = r.insertCell();
+  let d2 = document.createElement("div"); d2.className = "cell-content"; d2.innerText = i.password || "-"; c2.appendChild(d2);
+  
+  let c3 = r.insertCell();
+  c3.innerHTML = `
+   <div class="action-btns">
+    <button class="btn-small btn-outline" onclick="copyText(getAcc()[${x}].email)">账号</button>
+    <button class="btn-small btn-outline" onclick="copyText(getAcc()[${x}].password)">密码</button>
+    <button class="btn-small btn-outline" onclick="editAcc(${x})">改密</button>
+    <button class="btn-small btn-danger" onclick="delAcc(${x})">删</button>
+   </div>
+  `;
+ });
+}
+
+function editAcc(i){
+    let d = getAcc();
+    let newPass = prompt("✏️ 请输入该邮箱的新密码：", d[i].password);
+    if(newPass !== null && newPass.trim() !== "" && newPass !== d[i].password){
+        d[i].password = newPass.trim();
+        localStorage.setItem("acc", JSON.stringify(d));
+        renderAcc();
+        syncToCloud();
+        toast("✅ 密码修改成功！");
+    }
+}
+
+function delAcc(i){ 
+    if(confirm("删除？")){ 
+        let d=getAcc(); 
+        d.splice(i,1); 
+        localStorage.setItem("acc", JSON.stringify(d)); 
+        renderAcc(); 
+        syncToCloud();
+    } 
+}
+
+function getSite(){ return JSON.parse(localStorage.getItem("site") || "[]"); }
+function importSite(){
+ let d = getSite();
+ txtSite.value.split("\n").forEach(l => {
+  let p = l.split(/----|:|\||\s{2,}/);
+  if(p.length >= 3) d.push({user: p[0], pass: p[1], remark: p[2]});
+ });
+ localStorage.setItem("site", JSON.stringify(d));
+ txtSite.value = ""; renderSite();
+ syncToCloud();
+}
+
+function exportSite(){
+ let csv = "\ufeffuser,password,remark\n";
+ getSite().forEach(i => csv += `${i.user},${i.pass},${i.remark}\n`);
+ download(csv, "sites.csv");
+}
+
+function renderSite(f = ""){
+ let fLower = f.toLowerCase();
+ let table = document.getElementById("siteTable");
+ table.innerHTML = `<tr><th style="width:20%">用户</th><th style="width:15%">密码</th><th style="width:30%">备注</th><th style="width:35%">操作</th></tr>`;
+ getSite().filter(i => (i.user||"").toLowerCase().includes(fLower) || (i.remark||"").toLowerCase().includes(fLower)).forEach((i, x) => {
+  let r = table.insertRow();
+  
+  let c1 = r.insertCell();
+  let d1 = document.createElement("div"); d1.className = "cell-content"; d1.innerText = i.user || "-"; c1.appendChild(d1);
+  
+  let c2 = r.insertCell();
+  let d2 = document.createElement("div"); d2.className = "cell-content"; d2.innerText = i.pass || "-"; c2.appendChild(d2);
+  
+  let c3 = r.insertCell();
+  let d3 = document.createElement("div"); d3.className = "cell-content"; d3.innerText = i.remark || "-"; c3.appendChild(d3);
+  
+  let c4 = r.insertCell();
+  c4.innerHTML = `
+   <div class="action-btns">
+    <button class="btn-small btn-outline" onclick="copyText(getSite()[${x}].user)">用户</button>
+    <button class="btn-small btn-outline" onclick="copyText(getSite()[${x}].pass)">密码</button>
+    <button class="btn-small btn-outline" onclick="editSite(${x})">改密</button>
+    <button class="btn-small btn-danger" onclick="delSite(${x})">删</button>
+   </div>
+  `;
+ });
+}
+
+function editSite(i){
+    let d = getSite();
+    let newPass = prompt("✏️ 请输入该网站的新密码：", d[i].pass);
+    if(newPass !== null && newPass.trim() !== "" && newPass !== d[i].pass){
+        d[i].pass = newPass.trim();
+        localStorage.setItem("site", JSON.stringify(d));
+        renderSite();
+        syncToCloud(); 
+        toast("✅ 密码修改成功！");
+    }
+}
+
+function delSite(i){ 
+    if(confirm("删除？")){ 
+        let d=getSite(); d.splice(i,1); 
+        localStorage.setItem("site", JSON.stringify(d)); 
+        renderSite(); 
+        syncToCloud();
+    } 
+}
+
+function getAPI(){ return JSON.parse(localStorage.getItem("api") || "[]"); }
+function importAPI(){
+ let d = getAPI();
+ txtAPI.value.split("\n").forEach(l => {
+  let p = l.split(/----|:|\||\s{2,}/);
+  if(p.length >= 3) d.push({url: p[0], key: p[1], remark: p[2]});
+ });
+ localStorage.setItem("api", JSON.stringify(d));
+ txtAPI.value = ""; renderAPI();
+ syncToCloud();
+}
+
+function exportAPI(){
+ let csv = "\ufeffurl,key,remark\n";
+ getAPI().forEach(i => csv += `${i.url},${i.key},${i.remark}\n`);
+ download(csv, "apis.csv");
+}
+
+function renderAPI(f = ""){
+ let fLower = f.toLowerCase();
+ let table = document.getElementById("apiTable");
+ table.innerHTML = `<tr><th style="width:20%">URL</th><th style="width:15%">KEY</th><th style="width:30%">备注</th><th style="width:35%">操作</th></tr>`;
+ getAPI().filter(i => (i.url||"").toLowerCase().includes(fLower) || (i.key||"").toLowerCase().includes(fLower) || (i.remark||"").toLowerCase().includes(fLower)).forEach((i, x) => {
+  let r = table.insertRow();
+  
+  let c1 = r.insertCell();
+  let d1 = document.createElement("div"); d1.className = "cell-content"; d1.innerText = i.url || "-"; c1.appendChild(d1);
+  
+  let c2 = r.insertCell();
+  let d2 = document.createElement("div"); d2.className = "cell-content"; d2.innerText = i.key || "-"; c2.appendChild(d2);
+  
+  let c3 = r.insertCell();
+  let d3 = document.createElement("div"); d3.className = "cell-content"; d3.innerText = i.remark || "-"; c3.appendChild(d3);
+  
+  let c4 = r.insertCell();
+  c4.innerHTML = `
+   <div class="action-btns">
+    <button class="btn-small btn-outline" onclick="copyText(getAPI()[${x}].url)">URL</button>
+    <button class="btn-small btn-outline" onclick="copyText(getAPI()[${x}].key)">KEY</button>
+    <button class="btn-small btn-danger" onclick="delAPI(${x})">删</button>
+   </div>
+  `;
+ });
+}
+
+function delAPI(i){ 
+    if(confirm("删除？")){ 
+        let d=getAPI(); d.splice(i,1); 
+        localStorage.setItem("api", JSON.stringify(d)); 
+        renderAPI(); 
+        syncToCloud();
+    } 
+}
+
+function download(c, n){
+ let a = document.createElement("a");
+ a.href = URL.createObjectURL(new Blob([c], {type: "text/csv;charset=utf-8"}));
+ a.download = n; a.click();
+}
+
+function switchData(id){
+ document.querySelectorAll(".section").forEach(i => i.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".tab-btn").forEach(i => i.classList.remove("active"));
+ document.getElementById("tab-" + id).classList.add("active");
+}
+
+renderDomains(); renderAcc(); renderSite(); renderAPI();
+syncFromCloud();
+</script>
+</body>
+</html>
