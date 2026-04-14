@@ -37,8 +37,8 @@ sed -i "s|REPLACE_WITH_URL|$u_url|g" index.html
 sed -i "s|REPLACE_WITH_KEY|$u_key|g" index.html
 
 echo "☁️ 正在生成唯一网址并部署..."
-# 生成 5 位随机数
-RAND_ID=$(date +%s | tail -c 5)
+# 生成 6 位随机数
+RAND_ID=$(LC_ALL=C tr -dc 'a-z0-9A-Z' < /dev/urandom | head -c 6)
 PROJECT_NAME="private-account-manager-$RAND_ID"
 
 vercel --prod --yes --name "$PROJECT_NAME" --token="$u_token"
