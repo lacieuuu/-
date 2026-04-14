@@ -108,8 +108,32 @@ button:active { transform: translateY(1px); }
 .result-text { font-family: 'Courier New', Courier, monospace; font-size: 16px; font-weight: bold; color: var(--primary-hover); word-break: break-all;}
 .result-actions { display: flex; gap: 8px; }
 
-.tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; border-bottom: 2px solid var(--primary-light);}
-.tab-btn { background: transparent; color: var(--text-muted); border-radius: 8px 8px 0 0; padding: 12px 20px; font-weight: bold; flex: 1; min-width: 100px; text-align: center;}
+/* 优化标签栏：取消强制平分，让按钮紧凑排列 */
+.tabs { 
+  display: flex; 
+  gap: 10px;             /* 缩小按钮之间的间距 */
+  margin-bottom: 20px; 
+  padding-bottom: 5px; 
+  border-bottom: 2px solid var(--primary-light);
+  justify-content: flex-start; /* 靠左对齐 */
+  overflow-x: hidden;   /* 既然能放下，就彻底禁用滑动 */
+}
+
+.tab-btn { 
+  background: transparent; 
+  color: var(--text-muted); 
+  border-radius: 8px 8px 0 0; 
+  padding: 10px 12px;   /* 缩小内边距：上下10px，左右12px */
+  font-weight: bold; 
+  flex: 0 1 auto;       /* ★核心修改：不再强制平分空间 */
+  min-width: 0;         /* 取消最小宽度限制 */
+  text-align: center;
+  font-size: 14px;      /* 稍微调小一点字号，确保在极窄手机上也不翻车 */
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+}
+
 .tab-btn.active { background: var(--primary); color: white; }
 
 .section { display: none; animation: fadeIn 0.3s ease; }
