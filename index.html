@@ -179,17 +179,81 @@ td:last-child {
   text-align: center;
 }
 .action-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px; 
-  align-items: center; 
-  justify-content: center; 
-  align-content: center; 
-  padding-right: 4px;
+  display/* ================= 表格核心排版优化 ================= */
+.table-wrapper { 
+  overflow-x: auto; 
+  overflow-y: auto; 
+  max-height: 500px; 
+  margin-top: 15px; 
+  border: 1px solid var(--border); 
+  border-radius: 8px; 
 }
 
-.cell-content::-webkit-scrollbar, .action-btns::-webkit-scrollbar { width: 4px; }
-.cell-content::-webkit-scrollbar-thumb, .action-btns::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  min-width: 600px; 
+  font-size: 13px; 
+  table-layout: fixed; 
+}
+
+/* 单元格基础：垂直居中 */
+th, td { 
+  border-bottom: 1px solid var(--border); 
+  padding: 12px 6px; 
+  vertical-align: middle; 
+}
+
+/* 表头：水平居中 + 垂直居中 */
+th { 
+  background: var(--primary-light); 
+  color: var(--primary-hover); 
+  position: sticky; 
+  top: 0; 
+  z-index: 10; 
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  text-align: center; 
+}
+
+/* 数据内容：水平靠左对齐 */
+td {
+  text-align: left; 
+}
+
+/* 最后一列操作按钮：保持居中比较美观 */
+td:last-child {
+  text-align: center;
+}
+
+/* 1. 文本内容：单行截断 + 省略号 + 靠左 */
+.cell-content {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  line-height: 1.5;
+  display: block;
+  text-align: left; 
+}
+
+/* 2. 备注列开绿灯：允许最多显示 3 行 */
+#siteTable td:nth-child(3) .cell-content,
+#apiTable td:nth-child(3) .cell-content {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  word-break: break-all;
+}
+
+/* 3. 按钮容器保持居中和自适应换行 */
+.action-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px; 
+  align-items: center; 
+  justify-content: center; 
+}
 /* ================================================== */
 
 /* Toast 提示 */
