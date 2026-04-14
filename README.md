@@ -44,7 +44,7 @@
 
  *  安卓手机打开termux，执行以下命令：
    ```bash
-   curl -s https://raw.githubusercontent.com/lacieuuu/private-account-manager/main/deploy.sh | bash
+   bash <(curl -s https://raw.githubusercontent.com/lacieuuu/private-account-manager/main/deploy.sh)
 
    ```
  2. **完成配置**
