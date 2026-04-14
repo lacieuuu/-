@@ -124,24 +124,35 @@ button:active { transform: translateY(1px); }
   margin-top: 15px; 
   border: 1px solid var(--border); 
   border-radius: 8px; 
+  /* 修复移动端滑动时外框圆角被吞掉的问题 */
+  transform: translateZ(0); 
 }
 
 table { 
   width: 100%; 
-  border-collapse: collapse; 
+  /* ★ 核心修复：放弃 collapse，改用 separate，彻底解决边框乱跑的 Bug */
+  border-collapse: separate; 
+  border-spacing: 0; 
   min-width: 600px; 
   font-size: 13px; 
   table-layout: fixed; 
 }
 
+/* 1. 给所有单元格统一画内部网格（只画底线和右侧线） */
 th, td { 
-  border: 1px solid var(--border); 
+  border-bottom: 1px solid var(--border); 
+  border-right: 1px solid var(--border); 
   padding: 8px 6px; 
   text-align: left;
   vertical-align: middle; 
-  height: 35px; /* 强制锁定每一个格子的绝对高度，谁也不能打破 */
+  height: 35px; 
 }
 
+/* 2. 消除最右侧和最底部的线，防止和外壳线条重叠加粗 */
+th:last-child, td:last-child { border-right: none; }
+tr:last-child td { border-bottom: none; }
+
+/* 3. 表头专属设置 */
 th { 
   background: var(--primary-light); 
   color: var(--primary-hover); 
@@ -149,15 +160,20 @@ th {
   top: 0; 
   z-index: 10; 
   text-align: center;
-  height: 35px; /* 表头不需要那么高 */
+  height: 40px; 
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* 滑动时增加立体感 */
 }
 
-/* 核心：固定高度、允许换行、超出则内部滑动 */
+/* 4. 强制表头两边跟随外壳的圆角，彻底解决顶部溢出 */
+th:first-child { border-top-left-radius: 7px; }
+th:last-child { border-top-right-radius: 7px; }
+
+/* 核心内容区 */
 .cell-content, .action-btns {
-  height: 40px;            /* 给内部容器定死高度，正好放下两排按钮 */
-  overflow-y: auto;        /* 绝招：超出部分在格子里滑动，不撑开表格 */
-  white-space: normal;     /* 允许自然换行，坚决不用省略号 */
-  word-break: break-all;   /* 长链接、长邮箱强制换行 */
+  height: 35px;            
+  overflow-y: auto;        
+  white-space: normal;     
+  word-break: break-all;   
   line-height: 1.4;
   text-align: left;
 }
@@ -172,12 +188,14 @@ th {
   gap: 6px; 
   align-items: center; 
   justify-content: center; 
-  align-content: center;   /* 按钮上下居中对齐 */
+  align-content: center;   
 }
 
-/* 给内部滑动条做个隐形美化，不占用空间 */
-.cell-content::-webkit-scrollbar, .action-btns::-webkit-scrollbar { width: 3px; }
-.cell-content::-webkit-scrollbar-thumb, .action-btns::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+/* 彻底隐藏内部滑动条 */
+.cell-content::-webkit-scrollbar, .action-btns::-webkit-scrollbar { 
+  display: none; 
+  width: 0; 
+}
 /* ================================================== */
 
 /* Toast 提示 */
