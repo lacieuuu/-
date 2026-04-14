@@ -534,7 +534,7 @@ function handleFileImport(event) {
             let d = getAcc();
             lines.forEach((l, index) => {
                 if (!l.trim() || (index === 0 && (l.includes("name,username,password") || l.includes("email")))) return; 
-                let p = isCSV ? l.split(',') : l.split(/----|:|\||\s{2,}/);
+                let p = isCSV ? l.split(',') : l.split(/----|\||\s{2,}/);
                 if (p.length >= 2) {
                     let email = p[0], pass = p[1];
                     if (isCSV && p.length >= 3) { email = p[1]; pass = p[2]; }
@@ -550,7 +550,7 @@ function handleFileImport(event) {
             let d = getSite();
             lines.forEach((l, index) => {
                 if (!l.trim() || (index === 0 && l.includes("user,password"))) return;
-                let p = isCSV ? l.split(',') : l.split(/----|:|\||\s{2,}/);
+                let p = isCSV ? l.split(',') : l.split(/----|\||\s{2,}/);
                 if (p.length >= 2) {
                     d.push({user: p[0].trim(), pass: p[1].trim(), remark: p[2] ? p[2].trim() : ""});
                     addedCount++;
@@ -562,7 +562,7 @@ function handleFileImport(event) {
             let d = getAPI();
             lines.forEach((l, index) => {
                 if (!l.trim() || (index === 0 && l.includes("url,key"))) return;
-                let p = isCSV ? l.split(',') : l.split(/----|:|\||\s{2,}/);
+                let p = isCSV ? l.split(',') : l.split(/----|\||\s{2,}/);
                 if (p.length >= 2) {
                     d.push({url: p[0].trim(), key: p[1].trim(), remark: p[2] ? p[2].trim() : ""});
                     addedCount++;
