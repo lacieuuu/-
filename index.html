@@ -134,66 +134,12 @@ table {
   table-layout: fixed; 
 }
 
-/* ★ 1. 加入网格竖线（将 border-bottom 改为全边框 border） */
-th, td { 
-  border: 1px solid var(--border); 
-  padding: 12px 6px; 
-  text-align: left;         /* 整体内容统靠左对齐 */
-  vertical-align: middle;   /* 保持垂直居中，让格子内部不显得偏上或偏下 */
-}
-
-/* ★ 2. 表头特殊待遇：保持水平、垂直双居中 */
-th { 
-  background: var(--primary-light); 
-  color: var(--primary-hover); 
-  position: sticky; 
-  top: 0; 
-  z-index: 10; 
-  text-align: center;       /* 表头字居中 */
-  vertical-align: middle;
-}
-
-/* ★ 3. 单元格内容：靠左对齐，长文本单行省略号 */
-.cell-content {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-  line-height: 1.5;
-  display: block;
-  text-align: left;         /* 取消之前的居中，强制靠左 */
-}
-
-/* ★ 4. 备注列：允许换行，最多显示 3 行 */
-#siteTable td:nth-child(3) .cell-content,
-#apiTable td:nth-child(3) .cell-content {
-  white-space: normal;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  word-break/* ================= 表格核心排版优化 ================= */
-.table-wrapper { 
-  overflow-x: auto; 
-  margin-top: 15px; 
-  border: 1px solid var(--border); 
-  border-radius: 8px; 
-}
-
-table { 
-  width: 100%; 
-  border-collapse: collapse; 
-  min-width: 600px; 
-  font-size: 13px; 
-  table-layout: fixed; 
-}
-
-/* ★ 1. 给所有行定死绝对高度，网格线全开 */
 th, td { 
   border: 1px solid var(--border); 
   padding: 8px 6px; 
-  text-align: left;         
-  vertical-align: middle;   
-  height: 85px; /* 强制所有内容行的高度统一为 85px */
+  text-align: left;
+  vertical-align: middle; 
+  height: 95px; /* 强制锁定每一个格子的绝对高度，谁也不能打破 */
 }
 
 th { 
@@ -202,32 +148,21 @@ th {
   position: sticky; 
   top: 0; 
   z-index: 10; 
-  text-align: center;       
-  height: 40px; /* 表头高度单独设低一点 */
+  text-align: center;
+  height: 40px; /* 表头不需要那么高 */
 }
 
-/* ★ 2. 内容区：取消省略号，改为限制高度 + 内部滚动 */
+/* 核心：固定高度、允许换行、超出则内部滑动 */
 .cell-content, .action-btns {
-  height: 68px; /* 刚好匹配 td 的高度 (减去上下 padding) */
-  overflow-y: auto; /* 如果文字或按钮溢出，在格子内部滑动显示 */
-  word-break: break-all; /* 允许长链接断行 */
-  white-space: pre-wrap; /* 允许正常换行，绝不使用省略号 */
+  height: 75px;            /* 给内部容器定死高度，正好放下两排按钮 */
+  overflow-y: auto;        /* 绝招：超出部分在格子里滑动，不撑开表格 */
+  white-space: normal;     /* 允许自然换行，坚决不用省略号 */
+  word-break: break-all;   /* 长链接、长邮箱强制换行 */
   line-height: 1.4;
-  width: 100%;
   text-align: left;
 }
 
-/* ★ 3. 弱化内部滚动条的视觉存在感（让界面更清爽） */
-.cell-content::-webkit-scrollbar, .action-btns::-webkit-scrollbar { 
-  width: 2px; 
-}
-.cell-content::-webkit-scrollbar-thumb, .action-btns::-webkit-scrollbar-thumb { 
-  background: rgba(0,0,0,0.15); 
-  border-radius: 2px; 
-}
-
-/* ★ 4. 最后一列（操作区）依然居中排布 */
-td:last-child {
+#tableAcc .cell-content, td:last-child {
   text-align: center;
 }
 
@@ -235,9 +170,14 @@ td:last-child {
   display: flex;
   flex-wrap: wrap;
   gap: 6px; 
-  align-content: flex-start; /* 从顶部开始排布，配合内部滑动 */
+  align-items: center; 
   justify-content: center; 
+  align-content: center;   /* 按钮上下居中对齐 */
 }
+
+/* 给内部滑动条做个隐形美化，不占用空间 */
+.cell-content::-webkit-scrollbar, .action-btns::-webkit-scrollbar { width: 3px; }
+.cell-content::-webkit-scrollbar-thumb, .action-btns::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 /* ================================================== */
 
 /* Toast 提示 */
